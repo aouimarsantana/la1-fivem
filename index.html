@@ -38,6 +38,26 @@
             font-size: 20px;
             z-index: 10;
         }
+
+        #sonido {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 35px;
+            background: white;
+            color: black;
+            border: none;
+            border-radius: 10px;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 20;
+        }
+
+        #sonido:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+        }
     </style>
 </head>
 
@@ -45,19 +65,52 @@
 
     <div id="mensaje">Cargando La 1...</div>
 
-    <video id="video" controls autoplay muted playsinline></video>
+    <video
+        id="video"
+        controls
+        autoplay
+        playsinline>
+    </video>
+
+    <button id="sonido" style="display:none;">
+        🔊 ACTIVAR SONIDO
+    </button>
 
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
     <script>
         const video = document.getElementById("video");
         const mensaje = document.getElementById("mensaje");
+        const botonSonido = document.getElementById("sonido");
 
-        const stream = "https://rtvelivestream.rtve.es/rtvesec/la1/la1_main_dvr.m3u8";
+        const stream =
+            "https://rtvelivestream.rtve.es/rtvesec/la1/la1_main_dvr.m3u8";
 
         function ocultarMensaje() {
             mensaje.style.display = "none";
         }
+
+        function mostrarBotonSonido() {
+            botonSonido.style.display = "block";
+        }
+
+        function reproducir() {
+            video.muted = false;
+
+            video.play().then(() => {
+                botonSonido.style.display = "none";
+            }).catch(() => {
+                mostrarBotonSonido();
+            });
+        }
+
+        botonSonido.addEventListener("click", () => {
+            video.muted = false;
+
+            video.play().then(() => {
+                botonSonido.style.display = "none";
+            });
+        });
 
         if (video.canPlayType("application/vnd.apple.mpegurl")) {
 
@@ -65,7 +118,7 @@
 
             video.addEventListener("loadedmetadata", () => {
                 ocultarMensaje();
-                video.play().catch(() => {});
+                reproducir();
             });
 
         } else if (Hls.isSupported()) {
@@ -77,14 +130,16 @@
 
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
                 ocultarMensaje();
-                video.play().catch(() => {});
+                reproducir();
             });
 
             hls.on(Hls.Events.ERROR, function(event, data) {
+
                 console.log("Error HLS:", data);
 
                 if (data.fatal) {
-                    mensaje.innerText = "No se puede reproducir La 1.";
+                    mensaje.innerText =
+                        "No se puede reproducir La 1.";
                 }
             });
 
