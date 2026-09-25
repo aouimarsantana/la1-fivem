@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La 1 - Directo</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: black;
+            overflow: hidden;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: black;
+        }
+
+        #mensaje {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            background: black;
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="mensaje">Cargando La 1...</div>
+
+    <video id="video" controls autoplay muted playsinline></video>
+
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+    <script>
+        const video = document.getElementById("video");
+        const mensaje = document.getElementById("mensaje");
+
+        const stream = "https://rtvelivestream.rtve.es/rtvesec/la1/la1_main_dvr.m3u8";
+
+        function ocultarMensaje() {
+            mensaje.style.display = "none";
+        }
+
+        if (video.canPlayType("application/vnd.apple.mpegurl")) {
+
+            video.src = stream;
+
+            video.addEventListener("loadedmetadata", () => {
+                ocultarMensaje();
+                video.play().catch(() => {});
+            });
+
+        } else if (Hls.isSupported()) {
+
+            const hls = new Hls();
+
+            hls.loadSource(stream);
+            hls.attachMedia(video);
+
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                ocultarMensaje();
+                video.play().catch(() => {});
+            });
+
+            hls.on(Hls.Events.ERROR, function(event, data) {
+                console.log("Error HLS:", data);
+
+                if (data.fatal) {
+                    mensaje.innerText = "No se puede reproducir La 1.";
+                }
+            });
+
+        } else {
+
+            mensaje.innerText =
+                "Este navegador no es compatible con HLS.";
+        }
+    </script>
+
+</body>
+</html>
